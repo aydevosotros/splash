@@ -24,6 +24,12 @@ RUN /tmp/provision.sh \
     remove_extra && \
     rm /tmp/provision.sh
 
+# Logstash
+RUN mkdir ~/logstash \
+    && apt-get install -y openjdk-8-jre \
+    && curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-6.3.0-amd64.deb \
+    && dpkg -i filebeat-6.3.0-amd64.deb \
+    && rm filebeat-6.3.0-amd64.deb
 
 ADD . /app
 RUN pip3 install /app
@@ -33,12 +39,17 @@ VOLUME [ \
     "/etc/splash/proxy-profiles", \
     "/etc/splash/js-profiles", \
     "/etc/splash/filters", \
-    "/etc/splash/lua_modules" \
+    "/etc/splash/lua_modules", \
+    "/etc/filebeat/" \
 ]
 
 EXPOSE 8050 5023
 
-ENTRYPOINT [ \
+ADD ./dockerfiles/splash/entrypoint.sh /opt/entrypoint.sh
+RUN chmod +x /opt/entrypoint.sh
+ENTRYPOINT ["/opt/entrypoint.sh"]
+
+CMD [ \
     "python3", \
     "/app/bin/splash", \
     "--proxy-profiles-path", "/etc/splash/proxy-profiles", \
