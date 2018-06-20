@@ -24,12 +24,13 @@ RUN /tmp/provision.sh \
     remove_extra && \
     rm /tmp/provision.sh
 
-# Logstash
+# Filebeat
 RUN mkdir ~/logstash \
     && apt-get install -y openjdk-8-jre \
     && curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-6.3.0-amd64.deb \
     && dpkg -i filebeat-6.3.0-amd64.deb \
     && rm filebeat-6.3.0-amd64.deb
+COPY dockerfiles/splash/filebeat.yml /etc/filebeat/filebeat.yml
 
 ADD . /app
 RUN pip3 install /app
@@ -55,5 +56,7 @@ CMD [ \
     "--proxy-profiles-path", "/etc/splash/proxy-profiles", \
     "--js-profiles-path", "/etc/splash/js-profiles", \
     "--filters-path", "/etc/splash/filters", \
-    "--lua-package-path", "/etc/splash/lua_modules/?.lua" \
+    "--lua-package-path", "/etc/splash/lua_modules/?.lua", \
+    "--logfile", "/var/log/splash.log", \
+    "--max-timeout", "3600" \
 ]
